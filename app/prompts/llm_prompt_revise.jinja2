@@ -1,0 +1,82 @@
+{# Variables: user_goal, previous_prompt, user_feedback, judge_score, judge_notes, strong_points, weak_points, revision_recommendations, iteration_index, provider_capabilities #}
+You are revising an image prompt based on quality evaluation results and user feedback. This is iteration {{ iteration_index }}.
+
+USER GOAL (immutable — never lose sight of this):
+{{ user_goal }}
+
+PREVIOUS PROMPT:
+{{ previous_prompt }}
+
+JUDGE EVALUATION (score: {{ judge_score }}/100):
+Notes: {{ judge_notes }}
+
+Strong points:
+{% for point in strong_points %}
+- {{ point }}
+{% endfor %}
+
+Weak points:
+{% for point in weak_points %}
+- {{ point }}
+{% endfor %}
+
+Revision recommendations from judge:
+{% for rec in revision_recommendations %}
+- {{ rec }}
+{% endfor %}
+{% if user_feedback %}
+
+USER FEEDBACK (highest priority — overrides all judge recommendations):
+{{ user_feedback }}
+{% endif %}
+
+PROVIDER CAPABILITIES:
+- Supports negative prompt: {{ provider_capabilities.supports_negative_prompt }}
+{% if provider_capabilities.max_prompt_chars %}
+- Max prompt length: {{ provider_capabilities.max_prompt_chars }} characters
+{% endif %}
+
+FLEX BLOCK REVISION STRATEGY:
+
+Each FLEX block in the previous prompt must be assigned one of three states based on the evaluation above:
+
+[FROZEN] — Score for this aspect is >= 80 AND it was not mentioned in user feedback AND it is listed in strong_points.
+  Rule: Copy this block verbatim. Do not alter a single word.
+
+[REVISE] — Score for this aspect is < 70, OR it appears in weak_points, OR the user explicitly mentioned it in feedback.
+  Rule: Rewrite this block substantially. Apply the revision_recommendations relevant to it.
+
+[FLEX] — Score is 70-79, not in strong_points, not in weak_points, not mentioned in user feedback.
+  Rule: Minor refinements permitted. Do not change the structural intent.
+
+USER FEEDBACK OVERRIDE: If the user mentioned a specific aspect (subject, style, lighting, composition, camera), treat that block as [REVISE] regardless of its judge score. User intent is final.
+
+WHAT TO PRESERVE:
+- All [FROZEN] block content exactly
+- The FLEX block marker syntax: ## FLEX_BEGIN:<name> ... ## FLEX_END:<name>
+- The overall prompt length within provider limits
+- The narrative/structural coherence of the full prompt
+
+OUTPUT FORMAT:
+Return a JSON object only. No markdown fences, no explanatory text before or after.
+
+{
+  "revised_prompt": "<the full revised prompt text, including all FLEX block markers>",
+  "negative_prompt": "<revised negative prompt, or null if provider does not support it>",
+  "changes_made": [
+    "<concise description of change 1>",
+    "<concise description of change 2>"
+  ],
+  "preserved_elements": [
+    "<description of what was kept and why>"
+  ],
+  "block_states": {
+    "subject": "FROZEN|REVISE|FLEX",
+    "style": "FROZEN|REVISE|FLEX",
+    "composition": "FROZEN|REVISE|FLEX",
+    "lighting": "FROZEN|REVISE|FLEX",
+    "camera": "FROZEN|REVISE|FLEX",
+    "constraints": "FROZEN|REVISE|FLEX",
+    "negative_constraints": "FROZEN|REVISE|FLEX"
+  }
+}
