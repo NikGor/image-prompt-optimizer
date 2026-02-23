@@ -1,0 +1,10 @@
+{# Variables: prompt, negative_prompt, n, response_format #}
+{# Defaults: n=1, response_format="url" #}
+{# Note: endpoint is https://api.x.ai/v1, model is grok-2-image #}
+{
+  "model": "grok-2-image",
+  "prompt": {{ prompt | tojson }}{% if negative_prompt %},
+  "negative_prompt": {{ negative_prompt | tojson }}{% endif %},
+  "n": {{ n | default(1) }},
+  "response_format": {{ (response_format | default("url")) | tojson }}
+}

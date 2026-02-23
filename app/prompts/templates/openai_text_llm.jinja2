@@ -1,0 +1,11 @@
+{# Variables: prompt, size, quality, style, response_format #}
+{# Defaults: size="1024x1024", quality="standard", style="vivid", response_format="url" #}
+{
+  "model": "dall-e-3",
+  "prompt": {{ prompt | tojson }},
+  "n": 1,
+  "size": {{ (size | default("1024x1024")) | tojson }},
+  "quality": {{ (quality | default("standard")) | tojson }},
+  "style": {{ (style | default("vivid")) | tojson }},
+  "response_format": {{ (response_format | default("url")) | tojson }}
+}
