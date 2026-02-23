@@ -1,0 +1,89 @@
+{# Variables: user_goal, image_provider, provider_capabilities, style_hint, aspect_ratio #}
+Generate an image prompt for the following user goal.
+
+USER GOAL:
+{{ user_goal }}
+
+TARGET PROVIDER: {{ image_provider }}
+
+PROVIDER CAPABILITIES:
+- Supports negative prompt: {{ provider_capabilities.supports_negative_prompt }}
+- Supported sizes: {{ provider_capabilities.supported_sizes | join(", ") if provider_capabilities.supported_sizes else "flexible" }}
+- Supports style presets: {{ provider_capabilities.supports_style_presets }}
+- Supports seed: {{ provider_capabilities.supports_seed }}
+{% if provider_capabilities.max_prompt_chars %}
+- Max prompt length: {{ provider_capabilities.max_prompt_chars }} characters
+{% endif %}
+{% if style_hint %}
+STYLE HINT FROM USER: {{ style_hint }}
+{% endif %}
+{% if aspect_ratio %}
+ASPECT RATIO: {{ aspect_ratio }}
+{% endif %}
+
+PROVIDER-SPECIFIC INSTRUCTIONS:
+{% if image_provider == "openai" %}
+- Write in flowing, descriptive prose — DALL-E 3 performs best with natural language, not keyword lists
+- Element order: Subject → Environment → Lighting → Mood → Style → Camera → Composition
+- Do NOT add a negative_prompt section — DALL-E 3 does not support it; encode exclusions as prose ("devoid of people", "empty street")
+- Keep total prompt between 150 and 400 characters for best results (hard limit: 4000 chars)
+- Do not mention "no watermark" or similar meta-instructions — DALL-E 3 ignores them
+{% elif image_provider == "grok" %}
+- Use keyword-dense style — Grok Aurora responds well to comma-separated descriptors
+- Include a negative_prompt block using the standard boilerplate unless the user's goal overrides it
+- Stack quality boosters in the main prompt: "sharp focus, 8k resolution, professional photography"
+- You may use more technical camera and lens terminology than you would for DALL-E 3
+{% else %}
+- Use clear, descriptive language covering subject, environment, style, and lighting
+- Include both positive prompt elements and, if the provider supports it, a negative_prompt block
+{% endif %}
+
+OUTPUT FORMAT:
+Return a JSON object with the following structure. No markdown fences, no commentary.
+
+{
+  "prompt": "<the full image prompt text, with FLEX blocks as specified below>",
+  "negative_prompt": "<negative prompt text, or null if provider does not support it>",
+  "flex_blocks": {
+    "subject": "<subject description used in the prompt>",
+    "style": "<style description used in the prompt>",
+    "composition": "<composition description used in the prompt>",
+    "lighting": "<lighting description used in the prompt>",
+    "camera": "<camera/lens description used in the prompt, or null>",
+    "constraints": "<positive constraints used in the prompt, or null>",
+    "negative_constraints": "<negative constraints used, or null>"
+  }
+}
+
+FLEX BLOCK RULES:
+The prompt text itself must contain inline FLEX block markers so the revision service can locate
+and update individual sections. Format each block as:
+
+## FLEX_BEGIN:<name>
+<content>
+## FLEX_END:<name>
+
+Example structure:
+## FLEX_BEGIN:subject
+A lone lighthouse keeper standing at the edge of a storm-battered cliff
+## FLEX_END:subject
+
+## FLEX_BEGIN:style
+painterly oil on canvas, impressionist brushwork, muted earth tones
+## FLEX_END:style
+
+## FLEX_BEGIN:lighting
+dramatic side lighting, heavy storm clouds diffusing sunlight, deep shadow pools
+## FLEX_END:lighting
+
+## FLEX_BEGIN:composition
+rule of thirds, figure placed left, vast stormy sea filling right two-thirds
+## FLEX_END:composition
+{% if image_provider != "openai" %}
+## FLEX_BEGIN:camera
+wide-angle 24mm, slight low angle looking up at figure
+## FLEX_END:camera
+{% endif %}
+
+Build the full prompt using these blocks. The blocks should read naturally as a cohesive
+description when their content is concatenated.

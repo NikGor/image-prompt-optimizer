@@ -1,0 +1,7 @@
+{# Variables: prompt, negative_prompt (TBD) #}
+{# Note: Nano Banana API endpoint and full parameter set are TBD. #}
+{# This template will be updated once the API contract is confirmed. #}
+{
+  "prompt": {{ prompt | tojson }}{% if negative_prompt %},
+  "negative_prompt": {{ negative_prompt | tojson }}{% endif %}
+}
