@@ -17,8 +17,9 @@ env/
 # Environment
 .env
 
-# Data (runtime sessions)
-data/sessions/
+# Data (runtime sessions — ignore content, keep directory marker)
+data/sessions/*
+!data/sessions/.gitkeep
 
 # Logs
 *.log
