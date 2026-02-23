@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//home/niko/.claude/plugins/marketplaces/claude-plugins-official/plugins/code-review/.claude-plugin/**)",
+      "Read(//home/niko/.claude/plugins/marketplaces/claude-plugins-official/external_plugins/**)",
+      "Bash(xargs:*)",
+      "Read(//home/niko/.claude/plugins/**)",
+      "Read(//home/niko/.claude/**)",
+      "Bash(python3:*)"
+    ]
+  }
+}
