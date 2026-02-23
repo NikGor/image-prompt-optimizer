@@ -77,6 +77,11 @@ app/
 data/
   sessions/              # Runtime — в .gitignore
 
+assets/
+  logo_horizontal.png    # Горизонтальный логотип (иконка + текст) — шапка/навбар
+  logo_icon.png          # Иконка без текста — favicon, пульсирующий лоадер
+  star.png               # Звезда-вспышка — декоративный элемент UI
+
 tests/
 frontend/                # React + Vite + Tailwind source
 ```
